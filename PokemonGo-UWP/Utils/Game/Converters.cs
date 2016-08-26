@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Google.Common.Geometry;
 using Google.Protobuf.Collections;
 using POGOProtos.Data;
 using POGOProtos.Data.Player;
@@ -1397,7 +1396,7 @@ namespace PokemonGo_UWP.Utils
             var res = ((size.Width - externalMargin) / minColumns) - internalMargin;
 
             //https://msdn.microsoft.com/en-us/windows/uwp/layout/design-and-ui-intro#effective-pixels-and-scaling
-            var width = ((int)res / 4) * 4; //round to 4 - win 10 optimized 
+            var width = ((int)res / 4) * 4; //round to 4 - win 10 optimized
             return width;
         }
 
