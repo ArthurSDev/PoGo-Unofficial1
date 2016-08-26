@@ -25,6 +25,7 @@ using Template10.Common;
 using Windows.UI.ViewManagement;
 using Windows.Graphics.Display;
 using Windows.Foundation;
+using Google.Common.Geometry;
 
 namespace PokemonGo_UWP.Utils
 {
