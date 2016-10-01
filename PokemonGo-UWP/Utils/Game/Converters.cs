@@ -29,6 +29,8 @@ using Windows.Foundation;
 using Windows.Services.Maps;
 using System.Threading.Tasks;
 using PokemonGo_UWP.ViewModels;
+using Cimbalino.Toolkit.Converters;
+using System.Globalization;
 
 namespace PokemonGo_UWP.Utils
 {
@@ -257,7 +259,7 @@ namespace PokemonGo_UWP.Utils
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var startustToPowerUp =  System.Convert.ToInt32(GameClient.PokemonUpgradeSettings.StardustCost[
+            var startustToPowerUp = System.Convert.ToInt32(GameClient.PokemonUpgradeSettings.StardustCost[
                 System.Convert.ToInt32(Math.Floor(PokemonInfo.GetLevel(((PokemonDataWrapper)value).WrappedData)) - 1)]);
             return startustToPowerUp > GameClient.PlayerProfile.Currencies.FirstOrDefault(item => item.Name.Equals("STARDUST")).Amount ? new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)) : App.Current.Resources["TitleTextColor"];
         }
@@ -333,9 +335,9 @@ namespace PokemonGo_UWP.Utils
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value == null) return new SolidColorBrush(Color.FromArgb(0,0,0,0));
+            if (value == null) return new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
             var extraData = GameClient.GetExtraDataForPokemon(((PokemonDataWrapper)value).PokemonId);
-            return extraData.CandyToEvolve > GameClient.CandyInventory.FirstOrDefault(item => item.FamilyId == extraData.FamilyId).Candy_ ? new SolidColorBrush(Color.FromArgb(255,255,0,0)) : App.Current.Resources["TitleTextColor"];
+            return extraData.CandyToEvolve > GameClient.CandyInventory.FirstOrDefault(item => item.FamilyId == extraData.FamilyId).Candy_ ? new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)) : App.Current.Resources["TitleTextColor"];
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -390,7 +392,7 @@ namespace PokemonGo_UWP.Utils
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             PokemonType pokeType;
-            if(System.Convert.ToInt32(parameter) == 2)
+            if (System.Convert.ToInt32(parameter) == 2)
             {
                 pokeType = GameClient.GetExtraDataForPokemon(((PokemonDataWrapper)value).PokemonId).Type2;
             } else
@@ -417,7 +419,7 @@ namespace PokemonGo_UWP.Utils
             if (value == null) return Visibility.Collapsed;
 
             Visibility visibility = Visibility.Collapsed;
-            if(System.Convert.ToBoolean(parameter))
+            if (System.Convert.ToBoolean(parameter))
             {
                 visibility = (Visibility)new InverseVisibleWhenTypeIsNotNoneConverter()
                     .Convert(GameClient.GetExtraDataForPokemon(((PokemonDataWrapper)value).PokemonId).Type2, targetType, null, language);
@@ -565,7 +567,7 @@ namespace PokemonGo_UWP.Utils
 
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if(value == null || !(value is ulong))
+            if (value == null || !(value is ulong))
             {
                 return "";
             }
@@ -576,7 +578,7 @@ namespace PokemonGo_UWP.Utils
                 var cellCenter = new S2CellId((ulong)value).ChildEndForLevel(30).ToLatLng();
                 MapLocationFinderResult result = await MapLocationFinder.FindLocationsAtAsync(new Geopoint(new BasicGeoposition() { Latitude = cellCenter.LatDegrees, Longitude = cellCenter.LngDegrees }));
 
-                if(result.Status == MapLocationFinderStatus.Success && result.Locations.Count != 0)
+                if (result.Status == MapLocationFinderStatus.Success && result.Locations.Count != 0)
                 {
                     var captureLocation = result.Locations[0];
                     return $"{captureLocation.Address.Town}, {captureLocation.Address.Region}, {captureLocation.Address.Country}";
@@ -609,7 +611,7 @@ namespace PokemonGo_UWP.Utils
             PokemonDataWrapper pokemon = (PokemonDataWrapper)value;
 
             Image img = new Image();
-            if(pokemon.IsBuddy)
+            if (pokemon.IsBuddy)
             {
                 // Buddy
                 img.Source = new BitmapImage(new Uri("ms-appx:///assets/Icons/ic_buddy.png"));
@@ -617,7 +619,7 @@ namespace PokemonGo_UWP.Utils
             } else
             {
                 // ArenaDeployment
-                switch(GameClient.PlayerProfile.Team)
+                switch (GameClient.PlayerProfile.Team)
                 {
                     case TeamColor.Red:
                         img.Source = new BitmapImage(new Uri("ms-appx:///assets/Icons/ic_arena_red.png"));
@@ -1242,7 +1244,7 @@ namespace PokemonGo_UWP.Utils
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var itemId = (value as ItemAward)?.ItemId ?? ((value as ItemData)?.ItemId ?? ((ItemDataWrapper)value).ItemId);
-            switch(itemId)
+            switch (itemId)
             {
                 case ItemId.ItemUnknown:
                 case ItemId.ItemSpecialCamera:
@@ -1988,7 +1990,7 @@ namespace PokemonGo_UWP.Utils
         #region Implementation of IValueConverter
 
         public object Convert(object value, Type targetType, object parameter, string language) {
-            if(value == null) {
+            if (value == null) {
                 return Visibility.Collapsed;
             }
             var ms = System.Convert.ToUInt64(value);
@@ -2153,5 +2155,102 @@ namespace PokemonGo_UWP.Utils
             throw new NotImplementedException();
         }
         #endregion
+    }
+    public class PokeTypeToAsset : IValueConverter
+    {
+        #region Implementation of IValueConverter
+
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            var poketype = (GymPokeType)value;
+
+            if (poketype.HasFlag(GymPokeType.Empty))
+                return new Uri("ms-appx:///Assets/Icons/indicator_empty.png");
+            else if (poketype.HasFlag(GymPokeType.Normal))
+                return new Uri("ms-appx:///Assets/Icons/indicator_normal.png");
+            else if (poketype.HasFlag(GymPokeType.King))
+                return new Uri("ms-appx:///Assets/Icons/indicator_crown.png");
+            else
+                return new Uri("");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+    }
+
+    public class PokeTypeKingToVisibility : IValueConverter
+    {
+        #region Implementation of IValueConverter
+
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            var poketype = (GymPokeType)value;
+            if (poketype.HasFlag(GymPokeType.King))
+                return Visibility.Visible;
+            else
+                return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+    }
+
+    public class PokeTypeSelectedToTeamColor : MultiValueConverterBase
+    {
+        public override object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values == null)
+                return Colors.White;
+
+            GymPokeType poketype;
+            if (values[0] == null)
+                poketype = GymPokeType.Empty;
+            else
+                poketype = (GymPokeType)values[0];
+
+
+            TeamColor teamcolor;
+            if (values[1] == null)
+                teamcolor = TeamColor.Neutral;
+            else
+                teamcolor = (TeamColor)values[1];
+
+            Color color;
+            if (poketype.HasFlag(GymPokeType.Selected))
+            {
+                switch (teamcolor)
+                {
+                    case TeamColor.Neutral:
+                        color = Color.FromArgb(255, 26, 237, 213);
+                        break;
+                    case TeamColor.Blue:
+                        color = Color.FromArgb(255, 40, 89, 237);
+                        break;
+                    case TeamColor.Red:
+                        color = Color.FromArgb(255, 237, 90, 90);
+                        break;
+                    case TeamColor.Yellow:
+                        color = Color.FromArgb(255, 254, 196, 50);
+                        break;
+                    default:
+                        color = Color.FromArgb(255, 0, 0, 0);
+                        break;
+                }
+                return new SolidColorBrush(color);
+            }
+            else
+                return new SolidColorBrush(Colors.White);
+        }
+
+        public override object[] ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
